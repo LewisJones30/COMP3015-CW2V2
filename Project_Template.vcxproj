@@ -145,7 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\glad (1)\src\glad.c" />
+    <ClCompile Include="glad.c" />
     <ClCompile Include="helper\cube.cpp" />
     <ClCompile Include="helper\glslprogram.cpp" />
     <ClCompile Include="helper\glutils.cpp" />

@@ -6,3 +6,5 @@ C:\Users\Marius\Desktop\Project_Template\x64\Debug\Project_Template.exe
 C:\Users\Marius\Desktop\Project_Template\x64\Debug\Project_Template.pdb
 C:\Users\Lewis\Downloads\Project_Template\Project_Template\x64\Debug\Project_Template.exe
 C:\Users\Lewis\Downloads\Project_Template\Project_Template\x64\Debug\Project_Template.pdb
+S:\University\Comp3015 GitHub\COMP3015-CW1\x64\Debug\Project_Template.exe
+S:\University\Comp3015 GitHub\COMP3015-CW1\x64\Debug\Project_Template.pdb
