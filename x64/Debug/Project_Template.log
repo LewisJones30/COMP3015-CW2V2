@@ -1,0 +1,4 @@
+﻿  scenebasic_uniform.cpp
+C:\Users\Lewis\Downloads\Project_Template\Project_Template\scenebasic_uniform.cpp(42,14): warning C4101: 'z': unreferenced local variable
+C:\Users\Lewis\Downloads\Project_Template\Project_Template\scenebasic_uniform.cpp(42,11): warning C4101: 'x': unreferenced local variable
+  Project_Template.vcxproj -> C:\Users\Lewis\Downloads\Project_Template\Project_Template\x64\Debug\Project_Template.exe
