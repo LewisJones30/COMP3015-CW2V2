@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="glad.c" />
     <ClCompile Include="helper\cube.cpp" />
+    <ClCompile Include="helper\frustum.cpp" />
     <ClCompile Include="helper\glslprogram.cpp" />
     <ClCompile Include="helper\glutils.cpp" />
     <ClCompile Include="helper\objmesh.cpp" />
@@ -164,11 +165,19 @@
   <ItemGroup>
     <None Include="shader\Blinn-Phong_Fragment.frag" />
     <None Include="shader\Blinn-Phong_Vertex_Shader.vert" />
+    <None Include="shader\shadows.geom">
+      <FileType>CppClass</FileType>
+    </None>
+    <None Include="shader\shadowvolume-render.frag" />
+    <None Include="shader\shadowvolume-render.vs" />
+    <None Include="shader\solid.frag" />
+    <None Include="shader\solid.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helper\aabb.h" />
     <ClInclude Include="helper\cube.h" />
     <ClInclude Include="helper\drawable.h" />
+    <ClInclude Include="helper\frustum.h" />
     <ClInclude Include="helper\glslprogram.h" />
     <ClInclude Include="helper\glutils.h" />
     <ClInclude Include="helper\objmesh.h" />

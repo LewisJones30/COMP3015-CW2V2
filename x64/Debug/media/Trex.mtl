@@ -1,0 +1,70 @@
+# Blender MTL File: 'None'
+# Material Count: 6
+
+newmtl SkinColor
+Ns 179.999996
+Ka 0.008547 0.008547 0.008547
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump -bm 0.050000 S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexBump012714.jpg
+map_Kd S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexColor01152015.jpg
+map_Ks S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexSpec.png
+
+newmtl blackMatteColor
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl clawColor
+Ns 179.999996
+Ka 0.500000 0.500000 0.500000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump -bm 0.400000 S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexTooth.png
+map_Kd S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexTooth.png
+
+newmtl eyeColor
+Ns 179.999996
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexEyeColor.jpg
+
+newmtl eyeTransparentColor
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 0.000000
+illum 6
+
+newmtl teethTexture
+Ns 394.920023
+Ka 0.500000 0.500000 0.500000
+Kd 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump -bm 0.350000 S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexTooth.png
+map_Kd S:\\University\\tyrannosarus-rex-free-model\\source\\TrexModelByJoel3d.zip\\TrexModelByJoel3d\\TrexTooth.png
