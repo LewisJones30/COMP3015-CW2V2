@@ -18,6 +18,7 @@ using std::endl;
 #include <glm/gtc/constants.hpp>
 #include "helper/torus.h"
 #include "helper/texture.h"
+#include "helper/particleutils.h"
 #include <random>
 
 
@@ -25,7 +26,8 @@ using glm::vec3;
 using glm::mat4;
 using glm::vec4;
 using glm::mat3;
-SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f, 10.0f, 2, 2, 5.0f, 5.0f)
+SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f, 10.0f, 2, 2, 5.0f, 5.0f), particleAngle(0.0f), drawBuf(1), time(0), deltaT(0), nParticles(4000),
+                                           particleLifetime(12.0f), emitterPos(0, 0, 0), emitterDir(1, 2, 0)
 {
     spot = ObjMesh::loadWithAdjacency("media/Raptor.obj");
 }
@@ -33,10 +35,36 @@ SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f
 void SceneBasic_Uniform::initScene()
 {
     compile();
+    
+
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+
+    model = mat4(1.0f);
+
+    glActiveTexture(GL_TEXTURE0);
+    Texture::loadTexture("media/texture/fire.png");
+    
+    glActiveTexture(GL_TEXTURE1);
+    ParticleUtils::createRandomTex1D(nParticles * 3);
+
+    initBuffers();
+    prog.use();
+    prog.setUniform("RandomTex", 1);
+    prog.setUniform("ParticleTex", 0);
+    prog.setUniform("ParticleLifetime", particleLifetime);
+    prog.setUniform("Accel", vec3(0.0f, -0.5f, 0.0f));
+    prog.setUniform("ParticleSize", 0.05f);
+    prog.setUniform("Emitter", emitterPos);
+    prog.setUniform("EmitterBasis", ParticleUtils::makeArbitraryBasis(emitterDir));
+
 
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClearStencil(0);
-    glEnable(GL_DEPTH_TEST);
+
 
     angle = 0.0f;
     setupFBO();
@@ -77,6 +105,81 @@ void SceneBasic_Uniform::initScene()
     
 
 }
+
+void SceneBasic_Uniform::initBuffers()
+{
+    glGenBuffers(2, posBuf);
+    glGenBuffers(2, velBuf);
+    glGenBuffers(2, age);
+
+
+    int size = nParticles * 3 * sizeof(GLfloat);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[0]);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[1]);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[0]);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[1]);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, age[0]);
+    glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), 0, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, age[1]);
+    glBufferData(GL_ARRAY_BUFFER, nParticles * sizeof(float), 0, GL_DYNAMIC_COPY);
+
+    std::vector<GLfloat> tempData(nParticles);
+    float rate = particleLifetime / nParticles;
+    for (int i = 0; i < nParticles; i++)
+    {
+        tempData[i] = rate * (i - nParticles);
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, age[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, nParticles * sizeof(float), tempData.data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glGenVertexArrays(2, particleArray);
+
+    glBindVertexArray(particleArray[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[0]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[0]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, age[0]);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(particleArray[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf[1]);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, velBuf[1]);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, age[1]);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+
+    glGenTransformFeedbacks(2, feedback);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, posBuf[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, velBuf[0]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, age[0]);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[1]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, posBuf[1]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, velBuf[1]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, age[1]);
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+}
+
 void SceneBasic_Uniform::updateLight()
 {
     lightPos = vec4(5.0f * vec3(cosf(angle) * 5.0f, 1.5f, sinf(angle) * 5.0f), 1.0f);
@@ -86,6 +189,16 @@ void SceneBasic_Uniform::compile()
 {
     try
     {
+        prog.compileShader("shader/particlesFragShader.frag");
+        prog.compileShader("shader/particlesVertShader.vert");
+
+        GLuint progHandle = prog.getHandle();
+        const char* outputNames[] = { "Position", "Velocity", "Age" };
+        glTransformFeedbackVaryings(progHandle, 3, outputNames, GL_SEPARATE_ATTRIBS);
+
+        prog.link();
+        prog.use();
+
         volumeProg.compileShader("shader/Blinn-Phong_Fragment.frag");
         volumeProg.compileShader("shader/Blinn-Phong_Vertex_Shader.vert");
         volumeProg.compileShader("shader/shadows.geom");
@@ -123,11 +236,46 @@ void SceneBasic_Uniform::update(float t)
         }
         updateLight();
     }
-   
 }
 
 void SceneBasic_Uniform::render()
 {
+    //Code for particle fountain.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    prog.use();
+    prog.setUniform("Time", time);
+    prog.setUniform("DeltaT", deltaT);
+
+    prog.setUniform("Pass", 1);
+
+    glEnable(GL_RASTERIZER_DISCARD);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+    glBeginTransformFeedback(GL_TRIANGLES);
+
+    glBindVertexArray(particleArray[1 - drawBuf]);
+    glVertexAttribDivisor(0, 0);
+    glVertexAttribDivisor(1, 1);
+    glVertexAttribDivisor(2, 1);
+    glDrawArrays(GL_TRIANGLES, 0, nParticles);
+    glBindVertexArray(0);
+
+    glEndTransformFeedback();
+    glDisable(GL_RASTERIZER_DISCARD);
+
+    prog.setUniform("Pass", 2);
+    setMatrices(prog);
+    glDepthMask(GL_FALSE);
+    glBindVertexArray(particleArray[drawBuf]);
+    glVertexAttribDivisor(0, 1);
+    glVertexAttribDivisor(1, 1);
+    glVertexAttribDivisor(2, 1);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticles);
+    glBindVertexArray(0);
+    glDepthMask(GL_TRUE);
+    drawBuf = 1 - drawBuf;
+
+
     pass1();
     glFlush();
     pass2();
@@ -189,7 +337,7 @@ void SceneBasic_Uniform::pass3()
     model = mat4(1.0f);
     projection = model;
     view = model;
-    setMatrices(compProg);
+    setMatricesShadow(compProg);
 
     glBindVertexArray(fsQuad);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -250,8 +398,15 @@ void SceneBasic_Uniform::resize(int w, int h)
 void SceneBasic_Uniform::setMatrices(GLSLProgram& prog)
 {
     mat4 mv = view * model;
-    prog.setUniform("ModelViewMatrix", mv);
-    prog.setUniform("ProjMatrix", projection);
+    prog.setUniform("MV", mv);
+    prog.setUniform("Proj", projection);
+}
+
+void SceneBasic_Uniform::setMatricesShadow(GLSLProgram& prog)
+{
+    mat4 mv = view * model;
+    prog.setUniform("MV", mv);
+    prog.setUniform("Proj", projection);
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
 }
 

@@ -20,7 +20,7 @@
 class SceneBasic_Uniform : public Scene
 {
 private:
-    GLSLProgram volumeProg, renderProg, compProg, prog, flatProg;
+    GLSLProgram volumeProg, renderProg, compProg, prog;
     GLuint colorDepthFBO, fsQuad;
     GLuint spotTex, brickTex;
     Plane plane;
@@ -39,10 +39,11 @@ private:
 
     int nParticles;
     float particleLifetime;
-    float time, deltaT;
+    float particleAngle, time, deltaT;
 
 
     void setMatrices(GLSLProgram& prog);
+    void setMatricesShadow(GLSLProgram& prog);
     void compile();
     void setupFBO();
     void drawScene(GLSLProgram& prog, bool onlyShadowCasters);
@@ -50,6 +51,7 @@ private:
     void pass2();
     void pass3();
     void updateLight();
+    void initBuffers();
 
 public:
     SceneBasic_Uniform();

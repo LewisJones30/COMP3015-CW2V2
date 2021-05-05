@@ -101,10 +101,10 @@
     <None Include="shader\shadowvolume-render.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="particlesVertShader.vert">
+    <None Include="shader\particlesFragShader.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="particlesFragShader.frag">
+    <None Include="shader\particlesVertShader.vert">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

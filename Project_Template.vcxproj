@@ -164,10 +164,10 @@
     <ClCompile Include="scenebasic_uniform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="particlesFragShader.frag" />
-    <None Include="particlesVertShader.vert" />
     <None Include="shader\Blinn-Phong_Fragment.frag" />
     <None Include="shader\Blinn-Phong_Vertex_Shader.vert" />
+    <None Include="shader\particlesFragShader.frag" />
+    <None Include="shader\particlesVertShader.vert" />
     <None Include="shader\shadows.geom">
       <FileType>CppClass</FileType>
     </None>
