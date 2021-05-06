@@ -7,3 +7,5 @@ C:\Users\Marius\Desktop\Project_Template\x64\Debug\Project_Template.pdb
 C:\Users\Lewis\Downloads\Project_Template\Project_Template\x64\Debug\Project_Template.exe
 C:\Users\Lewis\Downloads\Project_Template\Project_Template\x64\Debug\Project_Template.pdb
 S:\University\Comp3015 GitHub\COMP3015-CW1\x64\Debug\Project_Template.exe
+C:\Users\Lewis\Downloads\COMP3015-CW2V2-2deed81f0191b65dfa81d8a6e94bb49dac6e4308\COMP3015-CW2V2-2deed81f0191b65dfa81d8a6e94bb49dac6e4308\x64\Debug\Project_Template.exe
+S:\COMP3015-CW2V2-2deed81f0191b65dfa81d8a6e94bb49dac6e4308\COMP3015-CW2V2-2deed81f0191b65dfa81d8a6e94bb49dac6e4308\x64\Debug\Project_Template.exe

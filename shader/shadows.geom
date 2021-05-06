@@ -1,13 +1,21 @@
 #version 460
 
 layout (triangles_adjacency) in;
-layout (triangle_strip, max_vertices = 18) out;
+layout (triangle_strip, max_vertices = 36) out;
 
 in vec3 VPosition[];
 in vec3 VNormal[];
 
+out vec3 GNormal;
+out vec3 GPosition;
+
 uniform vec4 LightPosition;
 uniform mat4 ProjMatrix;
+
+flat out int GIsEdge;
+
+uniform float EdgeWidth;
+uniform float PctExtend;
 
 bool facesLight(vec3 a, vec3 b, vec3 c)
 {
@@ -18,6 +26,8 @@ bool facesLight(vec3 a, vec3 b, vec3 c)
 	return dot(n, da) > 0 || dot(n, db) > 0 || dot(n, dc) > 0;
 }
 
+
+
 void emitEdgeQuad( vec3 a, vec3 b)
 {
 	gl_Position = ProjMatrix * vec4(a, 1);
@@ -27,7 +37,7 @@ void emitEdgeQuad( vec3 a, vec3 b)
 	gl_Position = ProjMatrix * vec4(b, 1);
 	EmitVertex();
 	EndPrimitive();
-}
+	}
 void main()
 {
 	if ( facesLight(VPosition[0], VPosition[2], VPosition[4])) {
@@ -37,6 +47,7 @@ void main()
 			emitEdgeQuad(VPosition[2], VPosition[4]);
 		if (! facesLight(VPosition[4], VPosition[5], VPosition[0]))
 			emitEdgeQuad(VPosition[4],VPosition[0]);
-
 	}
+
+
 }

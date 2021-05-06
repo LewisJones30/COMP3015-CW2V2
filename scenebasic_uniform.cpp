@@ -18,26 +18,91 @@ using std::endl;
 #include <glm/gtc/constants.hpp>
 #include "helper/torus.h"
 #include "helper/texture.h"
-#include "helper/particleutils.h"
 #include <random>
+#include "helper/particleutils.h"
+#include "helper/random.h"
 
 
 using glm::vec3;
 using glm::mat4;
 using glm::vec4;
 using glm::mat3;
-SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f, 10.0f, 2, 2, 5.0f, 5.0f), particleAngle(0.0f), drawBuf(1), time(0), deltaT(0), nParticles(4000),
-                                           particleLifetime(12.0f), emitterPos(0, 0, 0), emitterDir(1, 2, 0)
+SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f, 10.0f, 2, 2, 5.0f, 5.0f), drawBuf(1), time(0), deltaT(0), nParticles(8000),
+particleLifetime(3.0f), emitterPos(1, 0, 0), emitterDir(1, 2, 0)
 {
-    spot = ObjMesh::loadWithAdjacency("media/Raptor.obj");
+    spot = ObjMesh::loadWithAdjacency("media/raptor.obj");
 }
 
 void SceneBasic_Uniform::initScene()
 {
-    compile();
-    
+    //compile();
 
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    //glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+    //glClearStencil(0);
+    //glEnable(GL_DEPTH_TEST);
+    //projection = mat4(1.0f);
+    //angle = 0.0f;
+
+    //setupFBO();
+    //renderProg.use();
+    //renderProg.setUniform("LightIntensity", vec3(5.0f));
+
+    //GLfloat verts[] = {
+    //    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
+    //};
+    //GLuint bufHandle;
+    //glGenBuffers(1, &bufHandle);
+    //glBindBuffer(GL_ARRAY_BUFFER, bufHandle);
+    //glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), verts, GL_STATIC_DRAW);
+
+    //glGenVertexArrays(1, &fsQuad);
+    //glBindVertexArray(fsQuad);
+
+    //glBindBuffer(GL_ARRAY_BUFFER, bufHandle);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    //glEnableVertexAttribArray(0);
+    //glBindVertexArray(0);
+
+    //glActiveTexture(GL_TEXTURE2);
+    //spotTex = Texture::loadTexture("media/texture/Raptor_low_Corpo_BaseColor.png");
+    //brickTex = Texture::loadTexture("media/texture/brick1.jpg");
+
+    //updateLight();
+
+    //renderProg.use();
+    //renderProg.setUniform("Tex", 2);
+    //renderProg.setUniform("EdgeWidth", 0.015f);
+    //renderProg.setUniform("PctExtend", 0.25f);
+    //renderProg.setUniform("LineColor", vec4(0.05f, 0.0f, 0.05f, 1.0f));
+    //renderProg.setUniform("Material.Kd", 0.7f, 0.5f, 0.2f);
+    //renderProg.setUniform("Light.Position", vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    //renderProg.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    //renderProg.setUniform("Light.Intensity", 1.0f, 1.0f, 1.0f);
+
+
+    //compProg.use();
+    //compProg.setUniform("DiffSpecTex", 0);
+
+    //this->animate(true);
+
+
+    compile();
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
+    glEnable(GL_DEPTH_TEST);
+
+    angle = glm::half_pi<float>();
+
+    prog.use();
+    prog.setUniform("EdgeWidth", 0.015f);
+    prog.setUniform("PctExtend", 0.25f);
+    prog.setUniform("LineColor", vec4(0.05f, 0.0f, 0.05f, 1.0f));
+    prog.setUniform("material.Kd", 0.7f, 0.5f, 0.2f);
+    prog.setUniform("Light.Position", vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    prog.setUniform("material.Ka", 0.2f, 0.2f, 0.2f);
+    prog.setUniform("Light.Intensity", 1.0f, 1.0f, 1.0f);
+
+    //Particle setup
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -47,64 +112,59 @@ void SceneBasic_Uniform::initScene()
 
     glActiveTexture(GL_TEXTURE0);
     Texture::loadTexture("media/texture/fire.png");
-    
+
     glActiveTexture(GL_TEXTURE1);
     ParticleUtils::createRandomTex1D(nParticles * 3);
 
     initBuffers();
-    prog.use();
-    prog.setUniform("RandomTex", 1);
-    prog.setUniform("ParticleTex", 0);
-    prog.setUniform("ParticleLifetime", particleLifetime);
-    prog.setUniform("Accel", vec3(0.0f, -0.5f, 0.0f));
-    prog.setUniform("ParticleSize", 0.05f);
-    prog.setUniform("Emitter", emitterPos);
-    prog.setUniform("EmitterBasis", ParticleUtils::makeArbitraryBasis(emitterDir));
+    particleProg.use();
+    particleProg.setUniform("RandomTex", 1);
+    particleProg.setUniform("ParticleTex", 0);
+    particleProg.setUniform("ParticleLifetime", particleLifetime);
+    particleProg.setUniform("Accel", vec3(0.0f, 0.5f, 0.0f));
+    particleProg.setUniform("ParticleSize", 0.05f);
+    particleProg.setUniform("Emitter", emitterPos);
+    particleProg.setUniform("EmitterBasis", ParticleUtils::makeArbitraryBasis(emitterDir));
 
-
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-    glClearStencil(0);
-
-
-    angle = 0.0f;
-    setupFBO();
-
-    renderProg.use();
-    renderProg.setUniform("LightIntensity", vec3(1.0f));
-
-    GLfloat verts[] = {
-        -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
-    };
-    GLuint bufHandle;
-    glGenBuffers(1, &bufHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, bufHandle);
-    glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), verts, GL_STATIC_DRAW);
-
-    glGenVertexArrays(1, &fsQuad);
-    glBindVertexArray(fsQuad);
-
-    glBindBuffer(GL_ARRAY_BUFFER, bufHandle);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
-
-    glActiveTexture(GL_TEXTURE2);
-    spotTex = Texture::loadTexture("media/texture/Raptor_low_Corpo_BaseColor.png");
-    brickTex = Texture::loadTexture("media/texture/brick1.jpg");
-
-    updateLight();
-    
-    renderProg.use();
-    renderProg.setUniform("Tex", 2);
-
-    compProg.use();
-    compProg.setUniform("DiffSpecTex", 0);
-
-    this->animate(true);
-
-    
+    flatProg.use();
+    flatProg.setUniform("Color", glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 
 }
+void SceneBasic_Uniform::updateLight()
+{
+    lightPos = vec4(5.0f * vec3(cosf(angle) * 5.0f, 1.5f, sinf(angle) * 5.0f), 1.0f);
+}
+
+void SceneBasic_Uniform::compile()
+{
+    try
+    {
+
+        prog.compileShader("shader/SilhouetteLinesFrag.frag");
+        prog.compileShader("shader/SilhouetteLinesVert.vert");
+        prog.compileShader("shader/SilhouetteGeometryShader.geom");
+        prog.link();
+        prog.use();
+
+        particleProg.compileShader("shader/particlesFragShader.frag");
+        particleProg.compileShader("shader/particlesVertShader.vert");
+        GLuint progHandle = prog.getHandle();
+        const char* outputNames[] = { "Position", "Velocity", "Age" };
+        glTransformFeedbackVaryings(progHandle, 3, outputNames, GL_SEPARATE_ATTRIBS);
+        particleProg.link();
+
+        flatProg.compileShader("shader/flat_frag.glsl");
+        flatProg.compileShader("shader/flat_vert.glsl");
+        flatProg.link();
+
+    }
+    catch (GLSLProgramException& e)
+    {
+        cerr << e.what() << endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 
 void SceneBasic_Uniform::initBuffers()
 {
@@ -180,74 +240,24 @@ void SceneBasic_Uniform::initBuffers()
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 }
 
-void SceneBasic_Uniform::updateLight()
-{
-    lightPos = vec4(5.0f * vec3(cosf(angle) * 5.0f, 1.5f, sinf(angle) * 5.0f), 1.0f);
-}
-
-void SceneBasic_Uniform::compile()
-{
-    try
-    {
-        prog.compileShader("shader/particlesFragShader.frag");
-        prog.compileShader("shader/particlesVertShader.vert");
-
-        GLuint progHandle = prog.getHandle();
-        const char* outputNames[] = { "Position", "Velocity", "Age" };
-        glTransformFeedbackVaryings(progHandle, 3, outputNames, GL_SEPARATE_ATTRIBS);
-
-        prog.link();
-        prog.use();
-
-        volumeProg.compileShader("shader/Blinn-Phong_Fragment.frag");
-        volumeProg.compileShader("shader/Blinn-Phong_Vertex_Shader.vert");
-        volumeProg.compileShader("shader/shadows.geom");
-        volumeProg.link();
-
-        renderProg.compileShader("shader/shadowvolume-render.frag");
-        renderProg.compileShader("shader/shadowvolume-render.vs");
-        renderProg.link();
-
-        compProg.compileShader("shader/solid.vs");
-        compProg.compileShader("shader/solid.frag");
-        compProg.link();
-    }
-    catch (GLSLProgramException& e)
-    {
-        cerr << e.what() << endl;
-        exit(EXIT_FAILURE);
-    }
-}
-
 void SceneBasic_Uniform::update(float t)
 {
-    float deltaT = t - tPrev;
-    if (tPrev == 0.0f)
-    {
-        deltaT = 0.0f;
-    }
-    tPrev = t;
-    if (animating())
-    {
-        angle += deltaT * rotSpeed;
-        if (angle > glm::two_pi<float>())
-        {
-            angle -= glm::two_pi<float>();
-        }
-        updateLight();
-    }
+    deltaT = t - time;
+    time = t;
+    angle = std::fmod(angle + 0.001f, glm::two_pi<float>());
 }
 
 void SceneBasic_Uniform::render()
 {
-    //Code for particle fountain.
+
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    prog.use();
-    prog.setUniform("Time", time);
-    prog.setUniform("DeltaT", deltaT);
+    particleProg.use();
+    particleProg.setUniform("Time", time);
+    particleProg.setUniform("DeltaT", deltaT);
 
-    prog.setUniform("Pass", 1);
+    particleProg.setUniform("Pass", 1);
 
     glEnable(GL_RASTERIZER_DISCARD);
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
@@ -263,8 +273,8 @@ void SceneBasic_Uniform::render()
     glEndTransformFeedback();
     glDisable(GL_RASTERIZER_DISCARD);
 
-    prog.setUniform("Pass", 2);
-    setMatrices(prog);
+    particleProg.setUniform("Pass", 2);
+    setMatrices(particleProg);
     glDepthMask(GL_FALSE);
     glBindVertexArray(particleArray[drawBuf]);
     glVertexAttribDivisor(0, 1);
@@ -276,77 +286,18 @@ void SceneBasic_Uniform::render()
     drawBuf = 1 - drawBuf;
 
 
-    pass1();
-    glFlush();
-    pass2();
-    glFlush();
-    pass3();
-}
-
-void SceneBasic_Uniform::pass1()
-{
-    glDepthMask(GL_TRUE);
-    glDisable(GL_STENCIL_TEST);
-    glEnable(GL_DEPTH_TEST);
-    projection = glm::infinitePerspective(glm::radians(50.0f), (float)width / height, 0.5f);
-    view = glm::lookAt(vec3(5.0f, 5.0f, 5.0f), vec3(0, 2, 0), vec3(0, 1, 0));
-
-    renderProg.use();
-    renderProg.setUniform("LightPosition", view * lightPos);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, colorDepthFBO);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    drawScene(renderProg, false);
-}
-
-void SceneBasic_Uniform::pass2()
-{
-    volumeProg.use();
-    volumeProg.setUniform("LightPosition", view * lightPos);
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, colorDepthFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, width - 1, height - 1, 0, 0, width - 1, height - 1, GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    glDepthMask(GL_FALSE);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glClear(GL_STENCIL_BUFFER_BIT);
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 0, 0xfffff);
-    glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
-    glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-    drawScene(volumeProg, true);
-
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-}
-void SceneBasic_Uniform::pass3()
-{
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-
-    glStencilFunc(GL_EQUAL, 0, 0xffff);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-    compProg.use();
-
+    prog.use();
+    vec3 cameraPos(1.5f * cos(angle), 0.0f, 1.5f * sin(angle));
+    view = glm::lookAt(cameraPos, vec3(0.0f, 0.1f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
     model = mat4(1.0f);
-    projection = model;
-    view = model;
-    setMatricesShadow(compProg);
+    model = glm::scale(model,(vec3(0.1f)));
+    setMatrices(prog);
+    spot->render();
+    glFinish();
 
-    glBindVertexArray(fsQuad);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBindVertexArray(0);
-
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
 
 }
+
 
 void SceneBasic_Uniform::setupFBO()
 {
@@ -391,82 +342,18 @@ void SceneBasic_Uniform::setupFBO()
 void SceneBasic_Uniform::resize(int w, int h)
 {
     glViewport(0, 0, w, h);
-    width = w;
-    height = h;
+    float c = 1.5f;
+    projection = glm::ortho(-0.4f * c, 0.4f * c, -0.3f * c, 0.3f * c, 0.1f, 100.0f);
 }
 
 void SceneBasic_Uniform::setMatrices(GLSLProgram& prog)
 {
     mat4 mv = view * model;
-    prog.setUniform("MV", mv);
-    prog.setUniform("Proj", projection);
-}
-
-void SceneBasic_Uniform::setMatricesShadow(GLSLProgram& prog)
-{
-    mat4 mv = view * model;
-    prog.setUniform("MV", mv);
-    prog.setUniform("Proj", projection);
+    prog.setUniform("ModelViewMatrix", mv);
+    prog.setUniform("ProjMatrix", projection);
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
+    prog.setUniform("MVP", projection * mv);
+    prog.setUniform("MV", mv);
+    prog.setUniform("Proj", projection);
 }
 
-void SceneBasic_Uniform::drawScene(GLSLProgram& prog, bool onlyShadowCasters)
-{
-    vec3 color;
-    if (!onlyShadowCasters)
-    {
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, spotTex);
-        color = vec3(1.0f);
-        prog.setUniform("Ka", color * 0.1f);
-        prog.setUniform("Kd", color);
-        prog.setUniform("Ks", vec3(0.9f));
-        prog.setUniform("Shininess", 150.0f);
-    }
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(-2.3f, 1.0f, 0.2f));
-    model = glm::rotate(model, glm::radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
-    model = glm::scale(model, vec3(0.25f));
-    setMatrices(prog);
-    spot->render();
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.5f, 1.0f, 2.7f));
-    model = glm::rotate(model, glm::radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
-    model = glm::scale(model, vec3(0.25f));
-    setMatrices(prog);
-    spot->render();
-
-    model = mat4(1.0f);
-    model = glm::translate(model, vec3(2.5f, 1.0f, -1.2f));
-    model = glm::rotate(model, glm::radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
-    model = glm::scale(model, vec3(0.25f));
-    setMatrices(prog);
-    spot->render();
-
-    if (!onlyShadowCasters)
-    {
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, brickTex);
-        color = vec3(0.5f);
-        prog.setUniform("Kd", color);
-        prog.setUniform("Ks", vec3(0.0f));
-        prog.setUniform("Ka", vec3(0.1f));
-        prog.setUniform("Shininess", 1.0f);
-        model = mat4(1.0f);
-        setMatrices(prog);
-        plane.render();
-        model = mat4(1.0f);
-        model = glm::translate(model, vec3(-5.0f, 5.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(90.0f), vec3(1, 0, 0));
-        model = glm::rotate(model, glm::radians(-90.0f), vec3(0.0f, 0.0f, 1.0f));
-        setMatrices(prog);
-        plane.render();
-        model = mat4(1.0f);
-        model = glm::translate(model, vec3(0.0f, 5.0f, -5.0f));
-        model = glm::rotate(model, glm::radians(90.0f), vec3(1.0f, 0.0f, 0.0f));
-        setMatrices(prog);
-        plane.render();
-        model = mat4(1.0f);
-    }
-
-}

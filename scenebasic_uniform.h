@@ -14,19 +14,20 @@
 #include "helper/sphere.h"
 #include "helper/skybox.h"
 #include "helper/frustum.h"
+#include "helper/noisetex.h"
 #include "helper/random.h"
-#include "helper/grid.h"
 
 class SceneBasic_Uniform : public Scene
 {
 private:
-    GLSLProgram volumeProg, renderProg, compProg, prog;
+    GLSLProgram volumeProg, particleProg, flatProg, prog;
     GLuint colorDepthFBO, fsQuad;
     GLuint spotTex, brickTex;
-    Plane plane;
-    std::unique_ptr<ObjMesh> spot;
-    glm::vec4 lightPos;
-    float angle, tPrev, rotSpeed;
+    GLuint pass1IndexNV, pass2IndexNV;
+    GLuint renderFBO;
+    GLuint renderTex;
+    GLuint noiseTex;
+
 
     Random rand;
     glm::vec3 emitterPos, emitterDir;
@@ -34,24 +35,31 @@ private:
     GLuint posBuf[2], velBuf[2], age[2];
     GLuint particleArray[2];
     GLuint feedback[2];
+    
     GLuint drawBuf;
-    Grid grid;
 
     int nParticles;
     float particleLifetime;
-    float particleAngle, time, deltaT;
+    float time, deltaT;
 
+
+
+    Plane plane;
+    std::unique_ptr<ObjMesh> spot;
+    glm::vec4 lightPos;
+    float angle, tPrev, rotSpeed;
 
     void setMatrices(GLSLProgram& prog);
-    void setMatricesShadow(GLSLProgram& prog);
     void compile();
     void setupFBO();
+    void initBuffers();
     void drawScene(GLSLProgram& prog, bool onlyShadowCasters);
     void pass1();
     void pass2();
     void pass3();
+    void pass1NV();
+    void pass2NV();
     void updateLight();
-    void initBuffers();
 
 public:
     SceneBasic_Uniform();

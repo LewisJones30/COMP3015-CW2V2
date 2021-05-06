@@ -75,7 +75,10 @@
     <ClCompile Include="helper\frustum.cpp">
       <Filter>helper</Filter>
     </ClCompile>
-    <ClCompile Include="helper\grid.cpp">
+    <ClCompile Include="helper\noisetex.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="helper\teapotpatch.cpp">
       <Filter>helper</Filter>
     </ClCompile>
   </ItemGroup>
@@ -101,10 +104,31 @@
     <None Include="shader\shadowvolume-render.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shader\nightvisionFrag.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\nightvisionVert.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="SilhouetteLinesVert.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="SilhouetteLinesFrag.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="SilhouetteGeometryShader.geom">
+      <Filter>shaders</Filter>
+    </None>
     <None Include="shader\particlesFragShader.frag">
       <Filter>shaders</Filter>
     </None>
     <None Include="shader\particlesVertShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="flat_frag.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="flat_vert.glsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
@@ -175,10 +199,10 @@
     <ClInclude Include="helper\frustum.h">
       <Filter>helper</Filter>
     </ClInclude>
-    <ClInclude Include="helper\grid.h">
+    <ClInclude Include="helper\noisetex.h">
       <Filter>helper</Filter>
     </ClInclude>
-    <ClInclude Include="helper\particleutils.h">
+    <ClInclude Include="helper\teapotpatch.h">
       <Filter>helper</Filter>
     </ClInclude>
   </ItemGroup>
