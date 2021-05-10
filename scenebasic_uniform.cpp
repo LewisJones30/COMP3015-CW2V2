@@ -28,64 +28,13 @@ using glm::mat4;
 using glm::vec4;
 using glm::mat3;
 SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f, 10.0f, 2, 2, 5.0f, 5.0f), drawBuf(1), time(0), deltaT(0), nParticles(8000),
-particleLifetime(3.0f), emitterPos(1, 0, 0), emitterDir(1, 2, 0)
+particleLifetime(1.25f), emitterPos(0, 0, 0), emitterDir(3, 0.5, 0)
 {
     spot = ObjMesh::loadWithAdjacency("media/raptor.obj");
 }
 
 void SceneBasic_Uniform::initScene()
 {
-    //compile();
-
-    //glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
-    //glClearStencil(0);
-    //glEnable(GL_DEPTH_TEST);
-    //projection = mat4(1.0f);
-    //angle = 0.0f;
-
-    //setupFBO();
-    //renderProg.use();
-    //renderProg.setUniform("LightIntensity", vec3(5.0f));
-
-    //GLfloat verts[] = {
-    //    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f
-    //};
-    //GLuint bufHandle;
-    //glGenBuffers(1, &bufHandle);
-    //glBindBuffer(GL_ARRAY_BUFFER, bufHandle);
-    //glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), verts, GL_STATIC_DRAW);
-
-    //glGenVertexArrays(1, &fsQuad);
-    //glBindVertexArray(fsQuad);
-
-    //glBindBuffer(GL_ARRAY_BUFFER, bufHandle);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    //glEnableVertexAttribArray(0);
-    //glBindVertexArray(0);
-
-    //glActiveTexture(GL_TEXTURE2);
-    //spotTex = Texture::loadTexture("media/texture/Raptor_low_Corpo_BaseColor.png");
-    //brickTex = Texture::loadTexture("media/texture/brick1.jpg");
-
-    //updateLight();
-
-    //renderProg.use();
-    //renderProg.setUniform("Tex", 2);
-    //renderProg.setUniform("EdgeWidth", 0.015f);
-    //renderProg.setUniform("PctExtend", 0.25f);
-    //renderProg.setUniform("LineColor", vec4(0.05f, 0.0f, 0.05f, 1.0f));
-    //renderProg.setUniform("Material.Kd", 0.7f, 0.5f, 0.2f);
-    //renderProg.setUniform("Light.Position", vec4(0.0f, 0.0f, 0.0f, 1.0f));
-    //renderProg.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
-    //renderProg.setUniform("Light.Intensity", 1.0f, 1.0f, 1.0f);
-
-
-    //compProg.use();
-    //compProg.setUniform("DiffSpecTex", 0);
-
-    //this->animate(true);
-
-
     compile();
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
@@ -104,26 +53,23 @@ void SceneBasic_Uniform::initScene()
 
     //Particle setup
 
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-
-    model = mat4(1.0f);
-
     glActiveTexture(GL_TEXTURE0);
     Texture::loadTexture("media/texture/fire.png");
 
     glActiveTexture(GL_TEXTURE1);
     ParticleUtils::createRandomTex1D(nParticles * 3);
-
-    initBuffers();
     particleProg.use();
+    initBuffers();
     particleProg.setUniform("RandomTex", 1);
     particleProg.setUniform("ParticleTex", 0);
     particleProg.setUniform("ParticleLifetime", particleLifetime);
-    particleProg.setUniform("Accel", vec3(0.0f, 0.5f, 0.0f));
+    particleProg.setUniform("Accel", vec3(0.0f, 0.0f, 0.0f));
     particleProg.setUniform("ParticleSize", 0.05f);
-    particleProg.setUniform("Emitter", emitterPos);
+    particleProg.setUniform("Emitter", vec3(0.5f, 0.5f, 0.5f));
     particleProg.setUniform("EmitterBasis", ParticleUtils::makeArbitraryBasis(emitterDir));
 
     flatProg.use();
@@ -144,11 +90,10 @@ void SceneBasic_Uniform::compile()
         prog.compileShader("shader/SilhouetteLinesVert.vert");
         prog.compileShader("shader/SilhouetteGeometryShader.geom");
         prog.link();
-        prog.use();
 
         particleProg.compileShader("shader/particlesFragShader.frag");
         particleProg.compileShader("shader/particlesVertShader.vert");
-        GLuint progHandle = prog.getHandle();
+        GLuint progHandle = particleProg.getHandle();
         const char* outputNames[] = { "Position", "Velocity", "Age" };
         glTransformFeedbackVaryings(progHandle, 3, outputNames, GL_SEPARATE_ATTRIBS);
         particleProg.link();
@@ -227,6 +172,7 @@ void SceneBasic_Uniform::initBuffers()
     glBindVertexArray(0);
 
     glGenTransformFeedbacks(2, feedback);
+
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[0]);
     glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, posBuf[0]);
     glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, velBuf[0]);
@@ -258,22 +204,23 @@ void SceneBasic_Uniform::render()
     particleProg.setUniform("DeltaT", deltaT);
 
     particleProg.setUniform("Pass", 1);
-
+    //glEnable(GL_BLEND);
     glEnable(GL_RASTERIZER_DISCARD);
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
-    glBeginTransformFeedback(GL_TRIANGLES);
+    glBeginTransformFeedback(GL_POINTS);
 
     glBindVertexArray(particleArray[1 - drawBuf]);
     glVertexAttribDivisor(0, 0);
     glVertexAttribDivisor(1, 1);
     glVertexAttribDivisor(2, 1);
-    glDrawArrays(GL_TRIANGLES, 0, nParticles);
+    glDrawArrays(GL_POINTS, 0, nParticles);
     glBindVertexArray(0);
 
     glEndTransformFeedback();
     glDisable(GL_RASTERIZER_DISCARD);
 
     particleProg.setUniform("Pass", 2);
+    //view = glm::lookAt(vec3(4.0f * cos(angle), 1.5f, 4.0f * sin(angle)), vec3(0.0f, 1.5f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
     setMatrices(particleProg);
     glDepthMask(GL_FALSE);
     glBindVertexArray(particleArray[drawBuf]);
@@ -285,23 +232,36 @@ void SceneBasic_Uniform::render()
     glDepthMask(GL_TRUE);
     drawBuf = 1 - drawBuf;
 
-
     prog.use();
-    vec3 cameraPos(1.5f * cos(angle), 0.0f, 1.5f * sin(angle));
-    view = glm::lookAt(cameraPos, vec3(0.0f, 0.1f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+    vec3 cameraPos(cos(angle), 1.0f, 1.5f * sin(angle));
+    view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
     model = mat4(1.0f);
-    model = glm::scale(model,(vec3(0.1f)));
+    model = glm::translate(model, vec3(0.0f, 0.0f, 0.0f));
+    model = glm::scale(model, (vec3(0.1f)));
+    setMatrices(prog);
+    spot->render();
+
+    model = mat4(1.0f);
+    model = glm::scale(model, (vec3(0.1f)));
+    model = glm::translate(model, vec3(5.0f, 0.0f, 0.0f));
+    setMatrices(prog);
+    spot->render();
+
+
+
+    model = mat4(1.0f);
+    model = glm::scale(model, (vec3(0.1f)));
+    model = glm::translate(model, vec3(-5.0f, 0.0f, 0.0f));
     setMatrices(prog);
     spot->render();
     glFinish();
-
 
 }
 
 
 void SceneBasic_Uniform::setupFBO()
 {
-    GLuint depthBuf;
+    /*GLuint depthBuf;
     glGenRenderbuffers(1, &depthBuf);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuf);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
@@ -336,7 +296,7 @@ void SceneBasic_Uniform::setupFBO()
     {
         printf("Framebuffer is not complete.\n");
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 }
 
 void SceneBasic_Uniform::resize(int w, int h)
@@ -353,7 +313,6 @@ void SceneBasic_Uniform::setMatrices(GLSLProgram& prog)
     prog.setUniform("ProjMatrix", projection);
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
     prog.setUniform("MVP", projection * mv);
-    prog.setUniform("MV", mv);
-    prog.setUniform("Proj", projection);
 }
+
 

@@ -50,6 +50,7 @@ private:
     float angle, tPrev, rotSpeed;
 
     void setMatrices(GLSLProgram& prog);
+    void setMatrices();
     void compile();
     void setupFBO();
     void initBuffers();
