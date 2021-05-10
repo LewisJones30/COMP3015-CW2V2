@@ -25,6 +25,9 @@
     <Filter Include="helper\stb">
       <UniqueIdentifier>{2eeab77b-5d84-4893-b9df-1b2ed789b189}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGui">
+      <UniqueIdentifier>{279ce41c-3803-43b0-8252-fd8a1dca3275}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -79,6 +82,9 @@
       <Filter>helper</Filter>
     </ClCompile>
     <ClCompile Include="helper\teapotpatch.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="helper\grid.cpp">
       <Filter>helper</Filter>
     </ClCompile>
   </ItemGroup>
@@ -206,6 +212,9 @@
       <Filter>helper</Filter>
     </ClInclude>
     <ClInclude Include="helper\particleutils.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper\grid.h">
       <Filter>helper</Filter>
     </ClInclude>
   </ItemGroup>

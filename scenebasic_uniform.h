@@ -16,19 +16,22 @@
 #include "helper/frustum.h"
 #include "helper/noisetex.h"
 #include "helper/random.h"
+#include "helper/grid.h"
+#include <GLFW/glfw3.h>
 
 class SceneBasic_Uniform : public Scene
 {
 private:
-    GLSLProgram volumeProg, particleProg, flatProg, prog;
+    GLSLProgram particleProg, flatProg, prog;
     GLuint colorDepthFBO, fsQuad;
     GLuint spotTex, brickTex;
     GLuint pass1IndexNV, pass2IndexNV;
     GLuint renderFBO;
     GLuint renderTex;
     GLuint noiseTex;
-
-
+    bool startTimer;
+    bool enableParticles = true;
+    
     Random rand;
     glm::vec3 emitterPos, emitterDir;
 
@@ -38,14 +41,15 @@ private:
     
     GLuint drawBuf;
 
+    Grid grid;
+
     int nParticles;
     float particleLifetime;
-    float time, deltaT;
+    float time, deltaT, holderT;
 
 
 
-    Plane plane;
-    std::unique_ptr<ObjMesh> spot;
+    std::unique_ptr<ObjMesh> spot, vent;
     glm::vec4 lightPos;
     float angle, tPrev, rotSpeed;
 
@@ -61,6 +65,7 @@ private:
     void pass1NV();
     void pass2NV();
     void updateLight();
+    void testFunc(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 public:
     SceneBasic_Uniform();

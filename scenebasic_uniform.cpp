@@ -21,16 +21,20 @@ using std::endl;
 #include <random>
 #include "helper/particleutils.h"
 #include "helper/random.h"
-
-
+#include <GLFW/glfw3.h>
+//#include "imgui-1.79/imgui.h"
+//#include "imgui-1.79/examples/imgui_impl_opengl3.h"
+//#include "imgui-1.79/examples/imgui_impl_glfw.h"
+//#include "imgui-1.79/examples/imgui_impl_win32.h"
 using glm::vec3;
 using glm::mat4;
 using glm::vec4;
 using glm::mat3;
-SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.1f), tPrev(0), plane(10.0f, 10.0f, 2, 2, 5.0f, 5.0f), drawBuf(1), time(0), deltaT(0), nParticles(8000),
-particleLifetime(1.25f), emitterPos(0, 0, 0), emitterDir(3, 0.5, 0)
+SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.25f), drawBuf(1), time(0), deltaT(0), nParticles(10000),
+particleLifetime(6.0f), emitterPos(1, 0, 0), emitterDir(0.0f, 2.0f, 0), startTimer(false)
 {
     spot = ObjMesh::loadWithAdjacency("media/raptor.obj");
+    vent = ObjMesh::loadWithAdjacency("media/vent.obj");
 }
 
 void SceneBasic_Uniform::initScene()
@@ -53,7 +57,6 @@ void SceneBasic_Uniform::initScene()
 
     //Particle setup
 
-
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
@@ -67,15 +70,17 @@ void SceneBasic_Uniform::initScene()
     particleProg.setUniform("RandomTex", 1);
     particleProg.setUniform("ParticleTex", 0);
     particleProg.setUniform("ParticleLifetime", particleLifetime);
-    particleProg.setUniform("Accel", vec3(0.0f, 0.0f, 0.0f));
-    particleProg.setUniform("ParticleSize", 0.05f);
-    particleProg.setUniform("Emitter", vec3(0.5f, 0.5f, 0.5f));
+    particleProg.setUniform("Accel", vec3(0.5f, 0.0f, 0.0f));
+    particleProg.setUniform("ParticleSize", 0.10f);
+    particleProg.setUniform("Emitter", emitterPos);
     particleProg.setUniform("EmitterBasis", ParticleUtils::makeArbitraryBasis(emitterDir));
 
     flatProg.use();
     flatProg.setUniform("Color", glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 
 }
+
+
 void SceneBasic_Uniform::updateLight()
 {
     lightPos = vec4(5.0f * vec3(cosf(angle) * 5.0f, 1.5f, sinf(angle) * 5.0f), 1.0f);
@@ -97,6 +102,7 @@ void SceneBasic_Uniform::compile()
         const char* outputNames[] = { "Position", "Velocity", "Age" };
         glTransformFeedbackVaryings(progHandle, 3, outputNames, GL_SEPARATE_ATTRIBS);
         particleProg.link();
+        particleProg.use();
 
         flatProg.compileShader("shader/flat_frag.glsl");
         flatProg.compileShader("shader/flat_vert.glsl");
@@ -188,72 +194,114 @@ void SceneBasic_Uniform::initBuffers()
 
 void SceneBasic_Uniform::update(float t)
 {
-    deltaT = t - time;
-    time = t;
-    angle = std::fmod(angle + 0.001f, glm::two_pi<float>());
+    if (startTimer)
+    {
+        deltaT = t - holderT;
+        if (deltaT > 10.0f)
+        {
+            deltaT = 0.0f;
+        }
+        holderT = t;
+        time += deltaT;
+        angle += deltaT * rotSpeed;
+        if (angle > glm::two_pi<float>())
+        {
+            angle -= glm::two_pi<float>();
+            enableParticles = !enableParticles;
+        }
+    }
+    else
+    {
+        if ((int)time % 13 > 0)
+        {
+            enableParticles = !enableParticles;
+        }
+        deltaT = t - holderT;
+        holderT = t;
+    }
 }
 
 void SceneBasic_Uniform::render()
 {
-
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    particleProg.use();
-    particleProg.setUniform("Time", time);
-    particleProg.setUniform("DeltaT", deltaT);
-
-    particleProg.setUniform("Pass", 1);
-    //glEnable(GL_BLEND);
-    glEnable(GL_RASTERIZER_DISCARD);
-    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
-    glBeginTransformFeedback(GL_POINTS);
-
-    glBindVertexArray(particleArray[1 - drawBuf]);
-    glVertexAttribDivisor(0, 0);
-    glVertexAttribDivisor(1, 1);
-    glVertexAttribDivisor(2, 1);
-    glDrawArrays(GL_POINTS, 0, nParticles);
-    glBindVertexArray(0);
-
-    glEndTransformFeedback();
-    glDisable(GL_RASTERIZER_DISCARD);
-
-    particleProg.setUniform("Pass", 2);
-    //view = glm::lookAt(vec3(4.0f * cos(angle), 1.5f, 4.0f * sin(angle)), vec3(0.0f, 1.5f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-    setMatrices(particleProg);
-    glDepthMask(GL_FALSE);
-    glBindVertexArray(particleArray[drawBuf]);
-    glVertexAttribDivisor(0, 1);
-    glVertexAttribDivisor(1, 1);
-    glVertexAttribDivisor(2, 1);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticles);
-    glBindVertexArray(0);
-    glDepthMask(GL_TRUE);
-    drawBuf = 1 - drawBuf;
-
     prog.use();
-    vec3 cameraPos(cos(angle), 1.0f, 1.5f * sin(angle));
-    view = glm::lookAt(cameraPos, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+
+
+    vec3 cameraPos(4.0f, 2.0f * tan(angle), -12.0f);
+    view = glm::lookAt(cameraPos, vec3(0.0f, 0.2f, -0.85f), vec3(1.0f, 0.0f, 0.0f));
+
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(0.0f, 0.0f, 0.0f));
+    model = glm::translate(model, vec3(-0.5f, -0.05f, 0.0f));
     model = glm::scale(model, (vec3(0.1f)));
+    model = glm::rotate(model, glm::radians(270.0f), vec3(0, 0.0f, 1.0f));
+    setMatrices(prog);
+    vent->render();
+
+    //model = mat4(1.0f);
+    //model = glm::translate(model, vec3(0.0f, 0.0f, 0.0f));
+    //model = glm::scale(model, (vec3(0.1f)));
+    //model = glm::rotate(model, glm::radians(270.0f), vec3(0, 0.0f, 1.0f));
+    //setMatrices(prog);
+    //spot->render();
+
+    //model = mat4(1.0f);
+    //model = glm::scale(model, (vec3(0.1f)));
+    //model = glm::translate(model, vec3(5.0f, 0.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(270.0f), vec3(0, 0.0f, 1.0f));
+    //setMatrices(prog);
+    //spot->render();
+
+    model = mat4(1.0f);
+    model = glm::scale(model, (vec3(0.1f)));
+    model = glm::translate(model, vec3(-4.5f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(270.0f), vec3(0, 0.0f, 1.0f));
     setMatrices(prog);
     spot->render();
 
     model = mat4(1.0f);
+    model = glm::translate(model, vec3(-0.5f, -0.1f, 0.0f));
     model = glm::scale(model, (vec3(0.1f)));
-    model = glm::translate(model, vec3(5.0f, 0.0f, 0.0f));
-    setMatrices(prog);
-    spot->render();
 
+    
+        if (!startTimer)
+        {
+            startTimer = true;
+        }
+        particleProg.use();
+        particleProg.setUniform("Time", time);
+        particleProg.setUniform("DeltaT", deltaT);
 
+        particleProg.setUniform("Pass", 1);
+        //glEnable(GL_BLEND);
+        glEnable(GL_RASTERIZER_DISCARD);
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+        glBeginTransformFeedback(GL_POINTS);
 
-    model = mat4(1.0f);
-    model = glm::scale(model, (vec3(0.1f)));
-    model = glm::translate(model, vec3(-5.0f, 0.0f, 0.0f));
-    setMatrices(prog);
-    spot->render();
+        glBindVertexArray(particleArray[1 - drawBuf]);
+        glVertexAttribDivisor(0, 0);
+        glVertexAttribDivisor(1, 1);
+        glVertexAttribDivisor(2, 1);
+        glDrawArrays(GL_POINTS, 0, nParticles);
+        glBindVertexArray(0);
+
+        glEndTransformFeedback();
+        glDisable(GL_RASTERIZER_DISCARD);
+        if (enableParticles)
+        {
+            particleProg.setUniform("Pass", 2);
+            //view = glm::lookAt(vec3(4.0f * cos(angle), 1.5f, 4.0f * sin(angle)), vec3(0.0f, 1.5f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+            setMatrices(particleProg);
+            glDepthMask(GL_FALSE);
+            glBindVertexArray(particleArray[drawBuf]);
+            glVertexAttribDivisor(0, 1);
+            glVertexAttribDivisor(1, 1);
+            glVertexAttribDivisor(2, 1);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticles);
+            glBindVertexArray(0);
+            glDepthMask(GL_TRUE);
+            drawBuf = 1 - drawBuf;
+        }
+
     glFinish();
 
 }
@@ -313,6 +361,8 @@ void SceneBasic_Uniform::setMatrices(GLSLProgram& prog)
     prog.setUniform("ProjMatrix", projection);
     prog.setUniform("NormalMatrix", glm::mat3(vec3(mv[0]), vec3(mv[1]), vec3(mv[2])));
     prog.setUniform("MVP", projection * mv);
+    prog.setUniform("MV", mv);
+    prog.setUniform("Proj", projection);
 }
 
 
