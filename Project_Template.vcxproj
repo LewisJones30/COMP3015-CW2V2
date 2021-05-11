@@ -168,11 +168,13 @@
   <ItemGroup>
     <None Include="flat_frag.glsl" />
     <None Include="flat_vert.glsl" />
+    <None Include="noiseFragShader.frag" />
+    <None Include="noiseVertShader.vert" />
+    <None Include="particlesFragShader.frag" />
     <None Include="shader\Blinn-Phong_Fragment.frag" />
     <None Include="shader\Blinn-Phong_Vertex_Shader.vert" />
     <None Include="shader\nightvisionFrag.frag" />
     <None Include="shader\nightvisionVert.vert" />
-    <None Include="shader\particlesFragShader.frag" />
     <None Include="shader\particlesVertShader.vert" />
     <None Include="shader\shadows.geom">
       <FileType>CppClass</FileType>

@@ -22,7 +22,7 @@
 class SceneBasic_Uniform : public Scene
 {
 private:
-    GLSLProgram particleProg, flatProg, prog;
+    GLSLProgram particleProg, flatProg, prog, skyboxProg;
     GLuint colorDepthFBO, fsQuad;
     GLuint spotTex, brickTex;
     GLuint pass1IndexNV, pass2IndexNV;
@@ -47,7 +47,8 @@ private:
     float particleLifetime;
     float time, deltaT, holderT;
 
-
+    SkyBox sky;
+    GLuint quad;
 
     std::unique_ptr<ObjMesh> spot, vent;
     glm::vec4 lightPos;

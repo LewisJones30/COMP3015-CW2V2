@@ -31,7 +31,7 @@ using glm::mat4;
 using glm::vec4;
 using glm::mat3;
 SceneBasic_Uniform::SceneBasic_Uniform() : rotSpeed(0.25f), drawBuf(1), time(0), deltaT(0), nParticles(10000),
-particleLifetime(6.0f), emitterPos(1, 0, 0), emitterDir(0.0f, 2.0f, 0), startTimer(false)
+particleLifetime(6.0f), emitterPos(1, 0, 0), emitterDir(0.0f, 2.0f, 0), startTimer(false), sky(100.0f)
 {
     spot = ObjMesh::loadWithAdjacency("media/raptor.obj");
     vent = ObjMesh::loadWithAdjacency("media/vent.obj");
@@ -78,6 +78,47 @@ void SceneBasic_Uniform::initScene()
     flatProg.use();
     flatProg.setUniform("Color", glm::vec4(0.3f, 0.3f, 0.3f, 1.0f));
 
+    //Setup for skybox noise
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+
+    projection = mat4(1.0f);
+    GLfloat verts[] = {
+        -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 0.0f };
+    GLfloat tc[] = {
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+    };
+
+    unsigned int handle[2];
+    glGenBuffers(2, handle);
+
+    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(float), verts, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), tc, GL_STATIC_DRAW);
+
+    glGenVertexArrays(1, &quad);
+    glBindVertexArray(quad);
+
+    glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
+    glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, ((GLubyte*)NULL + (0)));
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, handle[1]);
+    glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 0, ((GLubyte*)NULL + (0)));
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+
+    skyboxProg.use();
+    skyboxProg.setUniform("NoiseTex", 2);
+
+    GLuint noiseTex = NoiseTex::generate2DTex(6.0f);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, noiseTex);
+
+
+
 }
 
 
@@ -95,6 +136,10 @@ void SceneBasic_Uniform::compile()
         prog.compileShader("shader/SilhouetteLinesVert.vert");
         prog.compileShader("shader/SilhouetteGeometryShader.geom");
         prog.link();
+
+        skyboxProg.compileShader("shader/noiseFragShader.frag");
+        skyboxProg.compileShader("shader/noiseVertShader.vert");
+        skyboxProg.link();
 
         particleProg.compileShader("shader/particlesFragShader.frag");
         particleProg.compileShader("shader/particlesVertShader.vert");
@@ -227,11 +272,11 @@ void SceneBasic_Uniform::render()
     prog.use();
 
 
-    vec3 cameraPos(4.0f, 2.0f * tan(angle), -12.0f);
+    vec3 cameraPos(4.0f, 2.0f, -12.0f);
     view = glm::lookAt(cameraPos, vec3(0.0f, 0.2f, -0.85f), vec3(1.0f, 0.0f, 0.0f));
 
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(-0.5f, -0.05f, 0.0f));
+    model = glm::translate(model, vec3(-0.5f, -0.05f, -0.5f));
     model = glm::scale(model, (vec3(0.1f)));
     model = glm::rotate(model, glm::radians(270.0f), vec3(0, 0.0f, 1.0f));
     setMatrices(prog);
@@ -253,13 +298,14 @@ void SceneBasic_Uniform::render()
 
     model = mat4(1.0f);
     model = glm::scale(model, (vec3(0.1f)));
-    model = glm::translate(model, vec3(-4.5f, 0.0f, 0.0f));
+    model = glm::translate(model, vec3(-4.0f, 0.0f, -3.0f));
     model = glm::rotate(model, glm::radians(270.0f), vec3(0, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
     setMatrices(prog);
     spot->render();
 
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(-0.5f, -0.1f, 0.0f));
+    model = glm::translate(model, vec3(-0.5f, -0.1f, -0.5f));
     model = glm::scale(model, (vec3(0.1f)));
 
     
@@ -302,6 +348,13 @@ void SceneBasic_Uniform::render()
             drawBuf = 1 - drawBuf;
         }
 
+    glActiveTexture(GL_TEXTURE2);
+    skyboxProg.use();
+    model = mat4(1.0f);
+    setMatrices(skyboxProg);
+    glBindVertexArray(quad);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    sky.render();
     glFinish();
 
 }

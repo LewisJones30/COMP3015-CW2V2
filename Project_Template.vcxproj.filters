@@ -125,9 +125,6 @@
     <None Include="SilhouetteGeometryShader.geom">
       <Filter>shaders</Filter>
     </None>
-    <None Include="shader\particlesFragShader.frag">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="shader\particlesVertShader.vert">
       <Filter>shaders</Filter>
     </None>
@@ -135,6 +132,15 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="flat_vert.glsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="particlesFragShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="noiseVertShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="noiseFragShader.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
