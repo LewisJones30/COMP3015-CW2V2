@@ -257,7 +257,7 @@ void SceneBasic_Uniform::update(float t)
     }
     else
     {
-        if ((int)time % 13 > 0)
+        if ((int)time % 5 > 0)
         {
             enableParticles = !enableParticles;
         }
@@ -269,6 +269,17 @@ void SceneBasic_Uniform::update(float t)
 void SceneBasic_Uniform::render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //Render the quad
+    glActiveTexture(GL_TEXTURE2);
+    skyboxProg.use();
+    model = mat4(1.0f);
+    setMatrices(skyboxProg);
+    glBindVertexArray(quad);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    sky.render();
+
+
     prog.use();
 
 
@@ -348,13 +359,6 @@ void SceneBasic_Uniform::render()
             drawBuf = 1 - drawBuf;
         }
 
-    glActiveTexture(GL_TEXTURE2);
-    skyboxProg.use();
-    model = mat4(1.0f);
-    setMatrices(skyboxProg);
-    glBindVertexArray(quad);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    sky.render();
     glFinish();
 
 }
