@@ -2,7 +2,8 @@
 
 ## How does the user interact with this executable?
 
-To run this program, navigate to the CW2 executable folder, and execute "Project_Template.exe". After a little while, the program will run and should look like the below image..
+To run this program, navigate to the CW2 executable folder, and execute "Project_Template.exe". After a little while, the program will run and should look like the below gif.
+(PLEASE NOTE: THE PARTICLE SYSTEM WILL APPEAR AND DISAPPEAR EVERY FIVE SECONDS.)
 
 ![Working GIF](https://i.gyazo.com/cbb5b0124246e4c5a2764e9d21ba7f45.gif)
 
