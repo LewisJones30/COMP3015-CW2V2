@@ -48,7 +48,7 @@ void SceneBasic_Uniform::initScene()
 
     prog.use();
     prog.setUniform("EdgeWidth", 0.015f);
-    prog.setUniform("PctExtend", 0.25f);
+    prog.setUniform("PctExtend", 0.15f);
     prog.setUniform("LineColor", vec4(0.05f, 0.0f, 0.05f, 1.0f));
     prog.setUniform("material.Kd", 0.7f, 0.5f, 0.2f);
     prog.setUniform("Light.Position", vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -248,19 +248,21 @@ void SceneBasic_Uniform::update(float t)
         }
         holderT = t;
         time += deltaT;
+        timer += deltaT;
         angle += deltaT * rotSpeed;
         if (angle > glm::two_pi<float>())
         {
             angle -= glm::two_pi<float>();
             enableParticles = !enableParticles;
         }
+        if (timer >= 5)
+        {
+            timer = 0;
+            enableParticles = !enableParticles;
+        }
     }
     else
     {
-        if ((int)time % 5 > 0)
-        {
-            enableParticles = !enableParticles;
-        }
         deltaT = t - holderT;
         holderT = t;
     }
@@ -316,7 +318,7 @@ void SceneBasic_Uniform::render()
     spot->render();
 
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(-0.5f, -0.1f, -0.5f));
+    model = glm::translate(model, vec3(-0.5f, 0.02f, -0.5f));
     model = glm::scale(model, (vec3(0.1f)));
 
     

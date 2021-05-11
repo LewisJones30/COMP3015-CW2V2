@@ -6,7 +6,7 @@ uniform vec4 Color;
 
 uniform sampler2D NoiseTex;
 
-uniform vec4 SkyColor = vec4(0.3, 0.3, 0.9, 1.0);
+uniform vec4 SkyColor = vec4(0.7, 0.3, 0.3, 1.0);
 uniform vec4 CloudColor = vec4(1.0, 1.0, 1.0, 1.0);
 
 in vec2 TexCoord;

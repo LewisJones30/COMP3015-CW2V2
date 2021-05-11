@@ -45,7 +45,7 @@ private:
 
     int nParticles;
     float particleLifetime;
-    float time, deltaT, holderT;
+    float time, timer, deltaT, holderT;
 
     SkyBox sky;
     GLuint quad;

@@ -137,10 +137,10 @@
     <None Include="particlesFragShader.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="noiseVertShader.vert">
+    <None Include="shader\noiseFragShader.frag">
       <Filter>shaders</Filter>
     </None>
-    <None Include="noiseFragShader.frag">
+    <None Include="shader\noiseVertShader.vert">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
